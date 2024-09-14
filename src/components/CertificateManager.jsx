@@ -3,11 +3,15 @@ import UploadForm from "./UploadForm";
 import CertificateList from "./CertificateList";
 import { fetchCertificates } from "../api/manageCertificateApi";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { AuthContext } from "../context/authContext";
+import { useContext } from "react";
 
 function CertificateManager() {
   const [certificates, setCertificates] = useState([]);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
   const queryClient = useQueryClient();
+  const { user } = useContext(AuthContext);
+  const userId = user?.user.id;
 
   const {
     isLoading,
@@ -22,9 +26,13 @@ function CertificateManager() {
   // This effect runs after the data is fetched
   useEffect(() => {
     if (fetchedCertificates) {
-      setCertificates(fetchedCertificates);
+      // Filter certificates to only include those that belong to the current user
+      const userCertificates = fetchedCertificates.filter(
+        (certificate) => certificate.userId === userId
+      );
+      setCertificates(userCertificates);
     }
-  }, [fetchedCertificates]);
+  }, [fetchedCertificates, userId]);
 
   const handleDelete = (certificate) => {
     setCertificates(certificates.filter((c) => c !== certificate));
@@ -45,6 +53,7 @@ function CertificateManager() {
 
   const handleUpdate = (certificate) => {
     setSelectedCertificate(certificate);
+    console.log(selectedCertificate);
   };
 
   if (isLoading) {

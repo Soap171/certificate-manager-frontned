@@ -28,3 +28,22 @@ export const fetchCertificates = async () => {
     console.log(error);
   }
 };
+
+export const updateCertificate = async (certificate) => {
+  try {
+    const response = await fetch(
+      `${serverUrl}/api/certificates/${certificate.id}`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(certificate),
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};

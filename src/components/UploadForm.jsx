@@ -2,7 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import { imageDb } from "../services/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 } from "uuid";
-import { postCertificate } from "../api/manageCertificateApi";
+import {
+  postCertificate,
+  updateCertificate,
+} from "../api/manageCertificateApi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../context/authContext";
 
@@ -12,73 +15,118 @@ function UploadForm({ onSubmit, certificate }) {
   const [issuedDate, setIssuedDate] = useState("");
   const [organization, setOrganization] = useState("");
   const [fileUrl, setFileUrl] = useState("");
+  const [validated, setValidated] = useState(false);
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
   const { user } = useContext(AuthContext);
   const userId = user?.user.id; // Ensure userId is correctly accessed
   console.log(userId);
 
   const queryClient = useQueryClient();
 
-  const mutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: postCertificate,
     onSuccess: () => {
       queryClient.invalidateQueries(["certificates"]);
+      clearForm();
     },
     onError: (error) => {
       console.error("Error creating certificate:", error);
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: updateCertificate,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["certificates"]);
+      clearForm();
+    },
+    onError: (error) => {
+      console.error("Error updating certificate:", error);
+    },
+  });
+
+  const clearForm = () => {
+    setFile(null);
+    setCertificateName("");
+    setIssuedDate("");
+    setOrganization("");
+    setFileUrl("");
+    setValidated(false);
+    setIsUpdateMode(false);
+  };
+
   useEffect(() => {
     if (certificate) {
-      setCertificateName(certificate.name);
+      setCertificateName(certificate.certificateName);
       setIssuedDate(certificate.issuedDate);
       setOrganization(certificate.organization);
-      setFile(certificate.file);
+      setFileUrl(certificate.imageUrl); // Set the existing image URL
+      setIsUpdateMode(true);
+    } else {
+      clearForm();
     }
   }, [certificate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      // Upload the file to Firebase Storage
-      const storageRef = ref(imageDb, `certificates/${v4()}`);
-      await uploadBytes(storageRef, file);
+    const form = e.currentTarget;
 
-      // Get the download URL
-      const fileUrl = await getDownloadURL(storageRef);
-      console.log(fileUrl);
-      setFileUrl(fileUrl);
+    if (
+      form.checkValidity() === false ||
+      certificateName.trim() === "" ||
+      !issuedDate
+    ) {
+      e.stopPropagation();
+      setValidated(true);
+      return;
+    }
+
+    let imageUrl = fileUrl; // Use the existing image URL by default
+
+    try {
+      if (file) {
+        // Upload the new file to Firebase Storage
+        const storageRef = ref(imageDb, `certificates/${v4()}`);
+        await uploadBytes(storageRef, file);
+
+        // Get the download URL
+        imageUrl = await getDownloadURL(storageRef);
+        console.log(imageUrl);
+        setFileUrl(imageUrl);
+      }
 
       const newCertificate = {
-        imageUrl: fileUrl, // Use the download URL instead of the file
-        certificateName: certificateName,
+        imageUrl, // Use the new or existing image URL
+        certificateName,
         issuedDate,
         organization,
-        userId: userId, // Include userId from AuthContext
+        userId, // Include userId from AuthContext
       };
 
-      mutation.mutate(newCertificate);
+      if (isUpdateMode) {
+        updateMutation.mutate({ ...newCertificate, id: certificate.id });
+        console.log("update certificate");
+      } else {
+        createMutation.mutate(newCertificate);
+        console.log("create certificate");
+      }
+
+      onSubmit(newCertificate);
+      clearForm();
     } catch (error) {
       console.log(error);
     }
-
-    const newCertificate = {
-      file,
-      name: certificateName,
-      issuedDate,
-      organization,
-      userId: userId,
-    };
-    onSubmit(newCertificate);
-    setFile(null);
-    setCertificateName("");
-    setIssuedDate("");
-    setOrganization("");
   };
 
   return (
     <div className="container mt-5">
-      <form onSubmit={handleSubmit}>
+      <form
+        className={`row g-3 needs-validation ${
+          validated ? "was-validated" : ""
+        }`}
+        noValidate
+        onSubmit={handleSubmit}
+      >
         <div className="mb-3">
           <label htmlFor="fileInput" className="form-label">
             Upload File (Image or PDF)
@@ -97,12 +145,18 @@ function UploadForm({ onSubmit, certificate }) {
           </label>
           <input
             type="text"
-            className="form-control"
+            className={`form-control ${
+              validated && certificateName.trim() === "" ? "is-invalid" : ""
+            }`}
             id="certificateName"
             placeholder="Enter certificate name"
             value={certificateName}
             onChange={(e) => setCertificateName(e.target.value)}
+            required
           />
+          <div className="invalid-feedback">
+            Please enter the certificate name.
+          </div>
         </div>
         <div className="mb-3">
           <label htmlFor="issuedDate" className="form-label">
@@ -110,11 +164,15 @@ function UploadForm({ onSubmit, certificate }) {
           </label>
           <input
             type="date"
-            className="form-control"
+            className={`form-control ${
+              validated && !issuedDate ? "is-invalid" : ""
+            }`}
             id="issuedDate"
             value={issuedDate}
             onChange={(e) => setIssuedDate(e.target.value)}
+            required
           />
+          <div className="invalid-feedback">Please select the issued date.</div>
         </div>
         <div className="mb-3">
           <label htmlFor="organization" className="form-label">
@@ -122,15 +180,21 @@ function UploadForm({ onSubmit, certificate }) {
           </label>
           <input
             type="text"
-            className="form-control"
+            className={`form-control ${
+              validated && organization.trim() === "" ? "is-invalid" : ""
+            }`}
             id="organization"
             placeholder="Enter organization name"
             value={organization}
             onChange={(e) => setOrganization(e.target.value)}
+            required
           />
+          <div className="invalid-feedback">
+            Please enter the organization name.
+          </div>
         </div>
         <button type="submit" className="btn btn-primary">
-          Submit
+          {isUpdateMode ? "Update Certificate" : "Submit Certificate"}
         </button>
       </form>
     </div>

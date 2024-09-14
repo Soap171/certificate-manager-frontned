@@ -14,12 +14,12 @@ const CertificateList = ({ certificates, onUpdate, onDelete }) => {
             <div className="d-flex align-items-center">
               <img
                 src={certificate.imageUrl}
-                alt={certificate.name}
+                alt="certificate"
                 className="img-thumbnail me-3"
                 style={{ width: "100px", height: "100px", objectFit: "cover" }}
               />
               <div>
-                <h5>{certificate.name}</h5>
+                <h5>{certificate.certificateName}</h5>
                 <p>Issued Date: {certificate.issuedDate}</p>
                 <p>Organization: {certificate.organization}</p>
               </div>
