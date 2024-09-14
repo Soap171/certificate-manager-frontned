@@ -20,7 +20,10 @@ const CertificateList = ({ certificates, onUpdate, onDelete }) => {
               />
               <div>
                 <h5>{certificate.certificateName}</h5>
-                <p>Issued Date: {certificate.issuedDate}</p>
+                <p>
+                  Issued Date:{" "}
+                  {new Date(certificate.issuedDate).toLocaleDateString()}
+                </p>
                 <p>Organization: {certificate.organization}</p>
               </div>
             </div>

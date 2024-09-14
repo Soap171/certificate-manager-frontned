@@ -58,7 +58,11 @@ function UploadForm({ onSubmit, certificate }) {
   useEffect(() => {
     if (certificate) {
       setCertificateName(certificate.certificateName);
-      setIssuedDate(certificate.issuedDate);
+      setIssuedDate(
+        certificate.issuedDate
+          ? new Date(certificate.issuedDate).toISOString().split("T")[0]
+          : ""
+      );
       setOrganization(certificate.organization);
       setFileUrl(certificate.imageUrl); // Set the existing image URL
       setIsUpdateMode(true);
