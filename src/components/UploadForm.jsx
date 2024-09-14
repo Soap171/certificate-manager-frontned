@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { imageDb } from "../services/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { v4 } from "uuid";
 import { postCertificate } from "../api/manageCertificateApi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AuthContext } from "../context/authContext";
 
 function UploadForm({ onSubmit, certificate }) {
   const [file, setFile] = useState(null);
@@ -10,6 +12,21 @@ function UploadForm({ onSubmit, certificate }) {
   const [issuedDate, setIssuedDate] = useState("");
   const [organization, setOrganization] = useState("");
   const [fileUrl, setFileUrl] = useState("");
+  const { user } = useContext(AuthContext);
+  const userId = user?.user.id; // Ensure userId is correctly accessed
+  console.log(userId);
+
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: postCertificate,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["certificates"]);
+    },
+    onError: (error) => {
+      console.error("Error creating certificate:", error);
+    },
+  });
 
   useEffect(() => {
     if (certificate) {
@@ -30,16 +47,17 @@ function UploadForm({ onSubmit, certificate }) {
       // Get the download URL
       const fileUrl = await getDownloadURL(storageRef);
       console.log(fileUrl);
-      // setFileUrl(fileUrl);
+      setFileUrl(fileUrl);
 
       const newCertificate = {
         imageUrl: fileUrl, // Use the download URL instead of the file
         certificateName: certificateName,
         issuedDate,
         organization,
+        userId: userId, // Include userId from AuthContext
       };
 
-      postCertificate(newCertificate);
+      mutation.mutate(newCertificate);
     } catch (error) {
       console.log(error);
     }
@@ -49,6 +67,7 @@ function UploadForm({ onSubmit, certificate }) {
       name: certificateName,
       issuedDate,
       organization,
+      userId: userId,
     };
     onSubmit(newCertificate);
     setFile(null);
@@ -114,12 +133,6 @@ function UploadForm({ onSubmit, certificate }) {
           Submit
         </button>
       </form>
-      {fileUrl && (
-        <div className="mt-3">
-          <h5>Uploaded Image:</h5>
-          <img src={fileUrl} alt="Uploaded" className="img-fluid" />
-        </div>
-      )}
     </div>
   );
 }
