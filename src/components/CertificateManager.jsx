@@ -1,27 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import UploadForm from "./UploadForm";
 import CertificateList from "./CertificateList";
+import { fetchCertificates } from "../api/manageCertificateApi";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 function CertificateManager() {
-  const [certificates, setCertificates] = useState([
-    {
-      file: null,
-      name: "React Certification",
-      issuedDate: "2022-01-01",
-      organization: "Coursera",
-      imageUrl:
-        "https://images.pexels.com/photos/13202066/pexels-photo-13202066.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", // Sample image URL
-    },
-    {
-      file: null,
-      name: "JavaScript Mastery",
-      issuedDate: "2021-12-15",
-      organization: "Udemy",
-      imageUrl:
-        "https://images.pexels.com/photos/13202066/pexels-photo-13202066.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", // Sample image URL
-    },
-  ]);
+  const [certificates, setCertificates] = useState([]);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const queryClient = useQueryClient();
+
+  const {
+    isLoading,
+    isError,
+    data: fetchedCertificates,
+    error,
+  } = useQuery({
+    queryKey: ["certificates"],
+    queryFn: fetchCertificates,
+  });
+
+  // This effect runs after the data is fetched
+  useEffect(() => {
+    if (fetchedCertificates) {
+      setCertificates(fetchedCertificates);
+    }
+  }, [fetchedCertificates]);
 
   const handleDelete = (certificate) => {
     setCertificates(certificates.filter((c) => c !== certificate));
@@ -43,6 +46,14 @@ function CertificateManager() {
   const handleUpdate = (certificate) => {
     setSelectedCertificate(certificate);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className="container">

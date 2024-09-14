@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { imageDb } from "../services/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { v4 } from "uuid";
+import { postCertificate } from "../api/manageCertificateApi";
 
 function UploadForm({ onSubmit, certificate }) {
   const [file, setFile] = useState(null);
   const [certificateName, setCertificateName] = useState("");
   const [issuedDate, setIssuedDate] = useState("");
   const [organization, setOrganization] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
 
   useEffect(() => {
     if (certificate) {
@@ -16,8 +20,30 @@ function UploadForm({ onSubmit, certificate }) {
     }
   }, [certificate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      // Upload the file to Firebase Storage
+      const storageRef = ref(imageDb, `certificates/${v4()}`);
+      await uploadBytes(storageRef, file);
+
+      // Get the download URL
+      const fileUrl = await getDownloadURL(storageRef);
+      console.log(fileUrl);
+      // setFileUrl(fileUrl);
+
+      const newCertificate = {
+        imageUrl: fileUrl, // Use the download URL instead of the file
+        certificateName: certificateName,
+        issuedDate,
+        organization,
+      };
+
+      postCertificate(newCertificate);
+    } catch (error) {
+      console.log(error);
+    }
+
     const newCertificate = {
       file,
       name: certificateName,
@@ -88,6 +114,12 @@ function UploadForm({ onSubmit, certificate }) {
           Submit
         </button>
       </form>
+      {fileUrl && (
+        <div className="mt-3">
+          <h5>Uploaded Image:</h5>
+          <img src={fileUrl} alt="Uploaded" className="img-fluid" />
+        </div>
+      )}
     </div>
   );
 }
