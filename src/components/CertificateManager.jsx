@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import UploadForm from "./UploadForm";
 import CertificateList from "./CertificateList";
-import { fetchCertificates } from "../api/manageCertificateApi";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import {
+  deleteCertificate,
+  fetchCertificates,
+} from "../api/manageCertificateApi";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { AuthContext } from "../context/authContext";
 import { useContext } from "react";
 
@@ -34,8 +37,19 @@ function CertificateManager() {
     }
   }, [fetchedCertificates, userId]);
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteCertificate,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["certificates"]);
+    },
+    onError: (error) => {
+      console.error("Error deleting certificate:", error);
+    },
+  });
+
   const handleDelete = (certificate) => {
-    setCertificates(certificates.filter((c) => c !== certificate));
+    deleteMutation.mutate(certificate.id);
+    setCertificates(certificates.filter((c) => c.id !== certificate.id));
   };
 
   const handleSubmit = (newCertificate) => {

@@ -47,3 +47,18 @@ export const updateCertificate = async (certificate) => {
     console.log(error);
   }
 };
+
+export const deleteCertificate = async (certificateId) => {
+  try {
+    const response = await fetch(
+      `${serverUrl}/api/certificates/${certificateId}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      }
+    );
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
