@@ -8,6 +8,8 @@ import {
 } from "../api/manageCertificateApi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthContext } from "../context/authContext";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function UploadForm({ onSubmit, certificate }) {
   const [file, setFile] = useState(null);
@@ -29,9 +31,11 @@ function UploadForm({ onSubmit, certificate }) {
     onSuccess: () => {
       queryClient.invalidateQueries(["certificates"]);
       clearForm();
+      toast.success("Certificate created successfully");
     },
     onError: (error) => {
       console.error("Error creating certificate:", error);
+      toast.error("An error occurred. Please try again.");
     },
   });
 
@@ -40,9 +44,11 @@ function UploadForm({ onSubmit, certificate }) {
     onSuccess: () => {
       queryClient.invalidateQueries(["certificates"]);
       clearForm();
+      toast.success("Certificate updated successfully");
     },
     onError: (error) => {
       console.error("Error updating certificate:", error);
+      toast.error("An error occurred. Please try again.");
     },
   });
 
@@ -123,12 +129,14 @@ function UploadForm({ onSubmit, certificate }) {
       setIsLoading(false);
     } catch (error) {
       console.log(error);
+
       setIsLoading(false);
     }
   };
 
   return (
     <div className="container mt-5">
+      <ToastContainer />
       <form
         className={`row g-3 needs-validation ${
           validated ? "was-validated" : ""

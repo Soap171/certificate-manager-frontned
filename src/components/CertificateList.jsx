@@ -1,7 +1,9 @@
 import React from "react";
 import { FaEdit, FaTrash, FaDownload } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
 
 const CertificateList = ({ certificates, onUpdate, onDelete }) => {
+  const location = useLocation().pathname;
   return (
     <div className="container mt-5 mb-5">
       <h3>Your Certificates</h3>
@@ -34,24 +36,28 @@ const CertificateList = ({ certificates, onUpdate, onDelete }) => {
                   <p>Organization: {certificate.organization}</p>
                 </div>
               </div>
-              <div>
-                <FaEdit
-                  className="text-primary me-3"
-                  onClick={() => onUpdate(certificate)}
-                />
-                <FaTrash
-                  className="text-danger me-3"
-                  onClick={() => onDelete(certificate)}
-                />
-                {certificate.file && (
-                  <a
-                    href={URL.createObjectURL(certificate.file)}
-                    download={certificate.name}
-                  >
-                    <FaDownload className="text-success" />
-                  </a>
-                )}
-              </div>
+              {location === "/" ? (
+                ""
+              ) : (
+                <div>
+                  <FaEdit
+                    className="text-primary me-3"
+                    onClick={() => onUpdate(certificate)}
+                  />
+                  <FaTrash
+                    className="text-danger me-3"
+                    onClick={() => onDelete(certificate)}
+                  />
+                  {certificate.file && (
+                    <a
+                      href={URL.createObjectURL(certificate.file)}
+                      download={certificate.name}
+                    >
+                      <FaDownload className="text-success" />
+                    </a>
+                  )}
+                </div>
+              )}
             </li>
           ))}
         </ul>
