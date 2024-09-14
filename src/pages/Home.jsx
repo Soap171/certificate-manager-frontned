@@ -5,7 +5,7 @@ function Home() {
   return (
     <div>
       <Hero />
-      <CertificateManager />
+      <CertificateManager showForm={false} />
     </div>
   );
 }

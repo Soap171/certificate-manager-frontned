@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from "react";
-import UploadForm from "./UploadForm";
-import CertificateList from "./CertificateList";
+import React, { useState, useEffect, useContext } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  deleteCertificate,
   fetchCertificates,
+  deleteCertificate,
 } from "../api/manageCertificateApi";
-import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { AuthContext } from "../context/authContext";
-import { useContext } from "react";
+import CertificateList from "./CertificateList";
+import UploadForm from "./UploadForm";
 import { ref, deleteObject } from "firebase/storage";
 import { imageDb } from "../services/firebase";
 
-function CertificateManager() {
+const CertificateManager = ({ showForm = true }) => {
   const [certificates, setCertificates] = useState([]);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
-  const queryClient = useQueryClient();
   const { user } = useContext(AuthContext);
-  const userId = user?.user.id;
+  const userId = user?.user.id; // Ensure userId is correctly accessed
+  const queryClient = useQueryClient();
 
   const {
     isLoading,
@@ -80,20 +79,15 @@ function CertificateManager() {
 
   const handleUpdate = (certificate) => {
     setSelectedCertificate(certificate);
-    console.log(selectedCertificate);
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError) {
-    return <div>Error: {error.message}</div>;
-  }
-
   return (
-    <div className="container">
-      <UploadForm onSubmit={handleSubmit} certificate={selectedCertificate} />
+    <div>
+      {showForm && (
+        <UploadForm onSubmit={handleSubmit} certificate={selectedCertificate} />
+      )}
+      {isLoading && <p>Loading...</p>}
+      {isError && <p>Error: {error.message}</p>}
       <CertificateList
         certificates={certificates}
         onUpdate={handleUpdate}
@@ -101,6 +95,6 @@ function CertificateManager() {
       />
     </div>
   );
-}
+};
 
 export default CertificateManager;
