@@ -103,8 +103,7 @@ function Login() {
                         disabled={loading}
                       >
                         {loading ? "Logging" : "Login"}
-                      </button>
-                      /*{" "}
+                      </button>{" "}
                       {error && (
                         <div className="alert alert-danger mt-4" role="alert">
                           {error}

@@ -8,6 +8,8 @@ import {
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { AuthContext } from "../context/authContext";
 import { useContext } from "react";
+import { ref, deleteObject } from "firebase/storage";
+import { imageDb } from "../services/firebase";
 
 function CertificateManager() {
   const [certificates, setCertificates] = useState([]);
@@ -47,9 +49,20 @@ function CertificateManager() {
     },
   });
 
-  const handleDelete = (certificate) => {
-    deleteMutation.mutate(certificate.id);
-    setCertificates(certificates.filter((c) => c.id !== certificate.id));
+  const handleDelete = async (certificate) => {
+    try {
+      // Delete the image from Firebase Storage
+      const imageRef = ref(imageDb, certificate.imageUrl);
+      await deleteObject(imageRef);
+
+      // Delete the certificate from the database
+      deleteMutation.mutate(certificate.id);
+
+      // Update the state to remove the deleted certificate
+      setCertificates(certificates.filter((c) => c.id !== certificate.id));
+    } catch (error) {
+      console.error("Error deleting certificate or image:", error);
+    }
   };
 
   const handleSubmit = (newCertificate) => {

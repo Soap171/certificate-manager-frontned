@@ -18,6 +18,7 @@ function UploadForm({ onSubmit, certificate }) {
   const [validated, setValidated] = useState(false);
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const { user } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = useState(false);
   const userId = user?.user.id; // Ensure userId is correctly accessed
   console.log(userId);
 
@@ -74,6 +75,7 @@ function UploadForm({ onSubmit, certificate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.currentTarget;
+    setIsLoading(true);
 
     if (
       form.checkValidity() === false ||
@@ -82,6 +84,7 @@ function UploadForm({ onSubmit, certificate }) {
     ) {
       e.stopPropagation();
       setValidated(true);
+      setIsLoading(false);
       return;
     }
 
@@ -117,8 +120,10 @@ function UploadForm({ onSubmit, certificate }) {
 
       onSubmit(newCertificate);
       clearForm();
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
+      setIsLoading(false);
     }
   };
 
@@ -197,8 +202,15 @@ function UploadForm({ onSubmit, certificate }) {
             Please enter the organization name.
           </div>
         </div>
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary" disabled={isLoading}>
           {isUpdateMode ? "Update Certificate" : "Submit Certificate"}
+          {isLoading && (
+            <span
+              className="spinner-border spinner-border-sm ms-2"
+              role="status"
+              aria-hidden="true"
+            ></span>
+          )}
         </button>
       </form>
     </div>
