@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import heroImg from "../images/Hero.png";
-//import useAuthContext from "../hooks/useAuthContext";
+
 function Hero() {
-  // const { user } = useAuthContext();
+  const user = localStorage.getItem("user");
+
   return (
     <div className="container-fluid px-4 py-5 my-5 text-center">
       <div className="lc-block mb-4">
@@ -28,9 +29,17 @@ function Hero() {
 
       <div className="lc-block d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
         {" "}
-        <a className="btn btn-primary btn-lg px-4 gap-3" role="button">
-          Upload Now
-        </a>
+        {user ? (
+          <Link
+            className="btn btn-primary btn-lg px-4 gap-3"
+            role="button"
+            to="/certificates"
+          >
+            Upload Now
+          </Link>
+        ) : (
+          ""
+        )}
         <Link
           className="btn btn-outline-secondary btn-lg px-4"
           to="/about"

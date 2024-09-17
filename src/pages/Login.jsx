@@ -1,13 +1,25 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import logoImg from "../images/Logo.jpg";
+import logoImg from "../images/Logo.svg";
 import { useLogin } from "../hooks/useLogin";
+import { ToastContainer, toast } from "react-toastify";
+import { useEffect } from "react";
+import "react-toastify/dist/ReactToastify.css";
 
 function Login() {
   const [validated, setValidated] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { login, error, loading, success } = useLogin();
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+    if (success === true) {
+      toast.success("Login successful");
+    }
+  }, [error, success]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +34,7 @@ function Login() {
 
   return (
     <section className="bg-light p-3 p-md-4 p-xl-5">
+      <ToastContainer />
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-12 col-md-9 col-lg-7 col-xl-6 col-xxl-5">
@@ -40,9 +53,6 @@ function Login() {
                           />
                         </a>
                       </div>
-                      <h4 className="text-center text-muted">
-                        Welcome back you've been missed!
-                      </h4>
                     </div>
                   </div>
                 </div>
@@ -104,16 +114,6 @@ function Login() {
                       >
                         {loading ? "Logging" : "Login"}
                       </button>{" "}
-                      {error && (
-                        <div className="alert alert-danger mt-4" role="alert">
-                          {error}
-                        </div>
-                      )}
-                      {success === true && (
-                        <div className="alert alert-success mt-4">
-                          Logged In
-                        </div>
-                      )}
                     </div>
                   </div>
                 </form>

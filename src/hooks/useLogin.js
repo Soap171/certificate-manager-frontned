@@ -36,7 +36,7 @@ export const useLogin = () => {
         setSuccess(true);
         setTimeout(() => {
           navigate("/");
-        }, 1000);
+        }, 1500);
       }
     } catch (error) {
       setLoading(false);

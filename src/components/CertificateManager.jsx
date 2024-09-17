@@ -9,6 +9,8 @@ import CertificateList from "./CertificateList";
 import UploadForm from "./UploadForm";
 import { ref, deleteObject } from "firebase/storage";
 import { imageDb } from "../services/firebase";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CertificateManager = ({ showForm = true }) => {
   const [certificates, setCertificates] = useState([]);
@@ -27,10 +29,8 @@ const CertificateManager = ({ showForm = true }) => {
     queryFn: fetchCertificates,
   });
 
-  // This effect runs after the data is fetched
   useEffect(() => {
     if (fetchedCertificates) {
-      // Filter certificates to only include those that belong to the current user
       const userCertificates = fetchedCertificates.filter(
         (certificate) => certificate.userId === userId
       );
@@ -59,8 +59,10 @@ const CertificateManager = ({ showForm = true }) => {
 
       // Update the state to remove the deleted certificate
       setCertificates(certificates.filter((c) => c.id !== certificate.id));
+      toast.success("Certificate deleted successfully!");
     } catch (error) {
       console.error("Error deleting certificate or image:", error);
+      toast.error("Error deleting certificate!");
     }
   };
 
@@ -83,11 +85,12 @@ const CertificateManager = ({ showForm = true }) => {
 
   return (
     <div>
+      <ToastContainer />
       {showForm && (
         <UploadForm onSubmit={handleSubmit} certificate={selectedCertificate} />
       )}
       {isLoading && <p>Loading...</p>}
-      {isError && <p>Error: {error.message}</p>}
+      {isError && console.log(error)}
       <CertificateList
         certificates={certificates}
         onUpdate={handleUpdate}

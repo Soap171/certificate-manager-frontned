@@ -1,12 +1,17 @@
 import React from "react";
-import { FaEdit, FaTrash, FaDownload } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
+import { FcGraduationCap } from "react-icons/fc";
+import { FcShare } from "react-icons/fc";
 
 const CertificateList = ({ certificates, onUpdate, onDelete }) => {
   const location = useLocation().pathname;
+
   return (
     <div className="container mt-5 mb-5">
-      <h3>Your Certificates</h3>
+      <h3 className="text-center my-4 p-3 bg-light rounded shadow-sm">
+        Your Valuable Achievements <FcGraduationCap size={40} />
+      </h3>
       {certificates.length === 0 ? (
         <p>No certificates available.</p>
       ) : (
@@ -48,13 +53,19 @@ const CertificateList = ({ certificates, onUpdate, onDelete }) => {
                     className="text-danger me-3"
                     onClick={() => onDelete(certificate)}
                   />
-                  {certificate.file && (
+                  {certificate.imageUrl ? (
                     <a
-                      href={URL.createObjectURL(certificate.file)}
-                      download={certificate.name}
+                      href={certificate.imageUrl}
+                      download={`${
+                        certificate.certificateName
+                      }${certificate.imageUrl.substring(
+                        certificate.imageUrl.lastIndexOf(".")
+                      )}`} // Extract the file extension from the URL
                     >
-                      <FaDownload className="text-success" />
+                      <FcShare className="text-success" />
                     </a>
+                  ) : (
+                    <p>No image available for download</p>
                   )}
                 </div>
               )}

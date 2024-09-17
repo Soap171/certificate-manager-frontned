@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import logoImg from "../images/Logo.jpg";
+import logoImg from "../images/Logo.svg";
 import { useSignUp } from "../hooks/useSignUp";
+import { useEffect } from "react";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 
 function SignUp() {
   const [validated, setValidated] = useState(false);
@@ -9,6 +12,15 @@ function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { signUpFn, error, loading, success } = useSignUp();
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+    if (success === true) {
+      toast.success("Sign up successful");
+    }
+  }, [error, success]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +34,7 @@ function SignUp() {
   };
   return (
     <section className="bg-light p-3 p-md-4 p-xl-5">
+      <ToastContainer />
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-12 col-md-9 col-lg-7 col-xl-6 col-xxl-5">
@@ -40,8 +53,8 @@ function SignUp() {
                           />
                         </a>
                       </div>
-                      <h4 className="text-center text-muted">
-                        Create your account
+                      <h4 className="text-start text-dark">
+                        Create Your Free Account !!
                       </h4>
                     </div>
                   </div>

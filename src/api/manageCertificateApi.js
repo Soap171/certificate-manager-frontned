@@ -49,16 +49,23 @@ export const updateCertificate = async (certificate) => {
 };
 
 export const deleteCertificate = async (certificateId) => {
+  const response = await fetch(`/api/certificates/${certificateId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete certificate");
+  }
+
   try {
-    const response = await fetch(
-      `${serverUrl}/api/certificates/${certificateId}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      }
-    );
-    return response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.log(error);
+    if (response.status === 204) {
+      return null;
+    } else {
+      throw error;
+    }
   }
 };
